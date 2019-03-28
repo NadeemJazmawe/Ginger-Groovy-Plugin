@@ -56,13 +56,30 @@ namespace GingerGroovyPluginConsole
                     if (string.IsNullOrEmpty(mGroovyExeFullPath))
                     {
                         mGroovyExeFullPath = Environment.GetEnvironmentVariable("GROOVY_HOME");                        
-                    }                    
+                    }
+                    else
+                    {
+                        Environment.SetEnvironmentVariable("GROOVY_HOME", mGroovyExeFullPath.Replace("bin",""));
+                    }
                     if (!string.IsNullOrEmpty(mGroovyExeFullPath))
                     {
                         if(!mGroovyExeFullPath.Contains("bin"))
                         {
                             mGroovyExeFullPath = Path.Combine(mGroovyExeFullPath, "bin");
-                        }                        
+                        }
+
+                        if (Path.GetFileName(mGroovyExeFullPath).ToLower().Contains("groovy") == false)
+                        {
+                            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                            {
+                                mGroovyExeFullPath = Path.Combine(mGroovyExeFullPath, "groovy.bat");
+                            }
+                            else//linux
+                            {
+                                mGroovyExeFullPath = Path.Combine(mGroovyExeFullPath, "groovy");
+                            }
+                        }
+
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
                             mGroovyExeFullPath = Path.GetFullPath(mGroovyExeFullPath);
@@ -140,19 +157,6 @@ namespace GingerGroovyPluginConsole
             }
         }
 
-        string mCommandLinePath = null;
-        public string CommandLinePath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(mCommandLinePath))
-                {
-                    mCommandLinePath = "C:\\Windows\\System32\\cmd.exe";
-                }
-                return mCommandLinePath;
-            }            
-        }
-
         public void Execute()
         {
             Console.Write("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Execution Started %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
@@ -200,10 +204,10 @@ namespace GingerGroovyPluginConsole
         private CommandElements PrepareFreeCommand()
         {
             string Arguments = string.Empty;
-            CommandElements command = new CommandElements();
-            command.ExecuterFilePath = CommandLinePath;
-            command.WorkingFolder = GroovyExeFullPath;
-            Arguments += string.Format("groovy {0}", GroovyScriptPath);
+            CommandElements command = new CommandElements();            
+            command.ExecuterFilePath = GroovyExeFullPath;                   
+            command.WorkingFolder = Path.GetDirectoryName(GroovyExeFullPath);
+            Arguments += string.Format("\"{0}\"", GroovyScriptPath) ;
             if(GroovyPrameters!=null)
             {
                 foreach (GroovyPrameters gp in GroovyPrameters)
@@ -295,16 +299,17 @@ namespace GingerGroovyPluginConsole
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    process.StartInfo.FileName = commandVals.ExecuterFilePath;
-                    process.StartInfo.Arguments = "/C " + commandVals.Arguments;                   
+                    process.StartInfo.FileName = commandVals.ExecuterFilePath;                                  
+                    process.StartInfo.Arguments = commandVals.Arguments;
                 }
                 else//Linux
-                {                  
+                {
+                    var escapedExecuter = commandVals.ExecuterFilePath.Replace("\"", "\\\"");
                     var escapedArgs = commandVals.Arguments.Replace("\"", "\\\"");
-                    process.StartInfo.FileName = "/bin/bash";
-                    process.StartInfo.Arguments = $"-c {escapedArgs}\"";
-                }
-
+                    process.StartInfo.WorkingDirectory = "";
+                    process.StartInfo.FileName = "bash";
+                    process.StartInfo.Arguments = $"-c \"{escapedExecuter} {escapedArgs}\"";                 
+                }                
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.UseShellExecute = false;                
                 process.StartInfo.RedirectStandardOutput = true;
