@@ -305,9 +305,9 @@ namespace GingerGroovyPluginConsole
                 else//Linux
                 {
                     var escapedExecuter = commandVals.ExecuterFilePath.Replace("\"", "\\\"");
-                    var escapedArgs = commandVals.Arguments.Replace("\"", "\\\"");
+                    var escapedArgs = commandVals.Arguments.Replace("\"", "\\\"");                  
                     process.StartInfo.WorkingDirectory = "";
-                    process.StartInfo.FileName = "bash";
+                    process.StartInfo.FileName = "/bin/bash";
                     process.StartInfo.Arguments = $"-c \"{escapedExecuter} {escapedArgs}\"";                 
                 }                
                 process.StartInfo.CreateNoWindow = true;
