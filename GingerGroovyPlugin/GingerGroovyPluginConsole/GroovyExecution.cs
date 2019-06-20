@@ -48,26 +48,32 @@ namespace GingerGroovyPluginConsole
                 return mGroovyExeFullPath;
             }
 
-            set                
+            set
             {
                 try
                 {
-                    mGroovyExeFullPath = value;                    
-                    if (string.IsNullOrEmpty(mGroovyExeFullPath))
+                    mGroovyExeFullPath = value;
+                    DirectoryInfo GroovyRootDirectory = Directory.GetParent(mGroovyExeFullPath.TrimEnd(new[] { '/', '\\' }));
+                    string[] BinDirectory = Directory.GetDirectories(GroovyRootDirectory.FullName, "bin");
+                    string EnvPath = mGroovyExeFullPath;
+                    if (BinDirectory.Count() == 1)
                     {
-                        mGroovyExeFullPath = Environment.GetEnvironmentVariable("GROOVY_HOME");                        
+                        EnvPath = GroovyRootDirectory.FullName;
                     }
                     else
                     {
-                        Environment.SetEnvironmentVariable("GROOVY_HOME", mGroovyExeFullPath.Replace("bin",""));
+                        mGroovyExeFullPath = Path.Combine(mGroovyExeFullPath, "bin");
+                    }
+                    if (string.IsNullOrEmpty(mGroovyExeFullPath))
+                    {
+                        mGroovyExeFullPath = Environment.GetEnvironmentVariable("GROOVY_HOME");
+                    }
+                    else
+                    {
+                        Environment.SetEnvironmentVariable("GROOVY_HOME", EnvPath);
                     }
                     if (!string.IsNullOrEmpty(mGroovyExeFullPath))
                     {
-                        if(!mGroovyExeFullPath.Contains("bin"))
-                        {
-                            mGroovyExeFullPath = Path.Combine(mGroovyExeFullPath, "bin");
-                        }
-
                         if (Path.GetFileName(mGroovyExeFullPath).ToLower().Contains("groovy") == false)
                         {
                             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
