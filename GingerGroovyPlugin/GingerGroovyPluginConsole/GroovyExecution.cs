@@ -53,29 +53,30 @@ namespace GingerGroovyPluginConsole
                 try
                 {
                     mGroovyExeFullPath = value;
-                    DirectoryInfo GroovyRootDirectory = Directory.GetParent(mGroovyExeFullPath.TrimEnd(new[] { '/', '\\' }));
-                    string[] BinDirectory = Directory.GetDirectories(GroovyRootDirectory.FullName, "bin");
-                    string EnvPath = mGroovyExeFullPath;
-                    if (BinDirectory.Count() == 1)
-                    {
-                        EnvPath = GroovyRootDirectory.FullName;
-                    }
-                    else
-                    {
-                        mGroovyExeFullPath = Path.Combine(mGroovyExeFullPath, "bin");
-                    }
                     if (string.IsNullOrEmpty(mGroovyExeFullPath))
                     {
-                        mGroovyExeFullPath = Environment.GetEnvironmentVariable("GROOVY_HOME");
+                        mGroovyExeFullPath = Path.Combine(Environment.GetEnvironmentVariable("GROOVY_HOME"), "bin");
                     }
-                    else
+                    else 
                     {
-                        Environment.SetEnvironmentVariable("GROOVY_HOME", EnvPath);
+                        string inputPath = mGroovyExeFullPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);                     
+                        if(Path.GetFileName(inputPath) == "bin")
+                        {                       
+                            mGroovyExeFullPath = inputPath;
+                        }
+                        else if (Path.GetFileName(inputPath).ToLower()=="groovy")
+                        {
+                            mGroovyExeFullPath = Path.GetDirectoryName(inputPath);
+                        }
+                        else
+                        {
+                            mGroovyExeFullPath = Path.Combine(inputPath,"bin");
+                        }
+                        //TODO: Do we really need to set Groovy home ???
+                        Environment.SetEnvironmentVariable("GROOVY_HOME", Path.GetDirectoryName(mGroovyExeFullPath));
                     }
                     if (!string.IsNullOrEmpty(mGroovyExeFullPath))
-                    {
-                        if (Path.GetFileName(mGroovyExeFullPath).ToLower().Contains("groovy") == false)
-                        {
+                    {                       
                             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                             {
                                 mGroovyExeFullPath = Path.Combine(mGroovyExeFullPath, "groovy.bat");
@@ -85,12 +86,7 @@ namespace GingerGroovyPluginConsole
                                 mGroovyExeFullPath = Path.Combine(mGroovyExeFullPath, "groovy");
                             }
                         }
-
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        {
-                            mGroovyExeFullPath = Path.GetFullPath(mGroovyExeFullPath);
-                        }
-                    }
+                        
                 }
                 catch (Exception ex)
                 {
@@ -224,6 +220,12 @@ namespace GingerGroovyPluginConsole
             command.Arguments = Arguments;
             return command;
         }
+
+
+        //private string CalculateGroovyPath()
+        //{
+        //    GroovyExeFullPath
+        //}
         
         public void SetContent(String content)
         {
