@@ -1,6 +1,6 @@
 {
   "Id": "Groovy",
-  "Version": "1.1.0",
+  "Version": "1.2.0",
   "ProjectUrl": "https://github.com/Ginger-Automation/Ginger-Groovy-Plugin",
   "Description": "Allow execution of groovy scripts",
   "Summary": "Groovy Integration For Ginger",

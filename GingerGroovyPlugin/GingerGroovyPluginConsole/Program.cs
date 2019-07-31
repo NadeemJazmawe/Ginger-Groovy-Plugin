@@ -11,7 +11,14 @@ namespace GingerGroovyPluginConsole
 
             using (GingerNodeStarter gingerNodeStarter = new GingerNodeStarter())
             {
-                gingerNodeStarter.StartNode("Groovy Script Execution Service", new GroovyScriptExecuterService());
+                if (args.Length > 0)
+                {
+                    gingerNodeStarter.StartFromConfigFile(args[0]);
+                }
+                else
+                {
+                    gingerNodeStarter.StartNode("Groovy Script Execution Service", new GroovyScriptExecuterService());                    
+                }
                 gingerNodeStarter.Listen();
             }
         }
