@@ -1,0 +1,27 @@
+name: Dotnet Generic CI Action
+
+on:
+    workflow_dispatch:  
+    workflow_call:
+    push:
+        branches:
+            - master
+
+jobs:
+    CI:
+        name: CI Process 
+        runs-on: windows-latest     ## Choose the required OS to run the project on 
+        steps:
+            -   name: Restore static site content
+                uses: actions/cache@v3.2.6     
+                with:
+                    path: ./**
+                    key: cache-site-${{ github.run_number }}
+                    enableCrossOsArchive:
+                        true  
+                        
+            -   name: Generic .NET Core CI
+                uses: NadeemJazmawe/DotNet-Generic-CI-Action@V1.0
+                with:
+                  # The version of .NET Core to use
+                  dotnet-version: 8.0.403
